@@ -1,0 +1,27 @@
+@startuml C4 Code
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Диграмма кода пользовательского класса компонента аутентификации системы «Тёплый дом»
+
+class User {
+    + String id
+    + String firstname
+    + String middlename
+    + String lastname
+    + String email
+    
+    + boolean login(String login, String password)
+    + void logout()
+}
+
+class AuthService {
+    + boolean authenticate(String login, String password)
+}
+
+class UserRepository {
+    + User findByEmail(String email)
+}
+
+User ..> AuthService : uses
+User ..> UserRepository : uses
+@enduml

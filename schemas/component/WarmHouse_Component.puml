@@ -1,0 +1,54 @@
+@startuml C4 Component
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Диграмма компонентов системы «Тёплый дом»
+
+Container_Boundary(warmhouseSystem, "Система «Тёплый дом»") {
+    Container(Frontend, "WEB-приложение", "React", "Обарабывает интерактивные действия пользователей")
+    Container(BFF, "BFF", "Node.js", "Обрабатывает запросы пользователей")
+    Container(Auth, "Auth", "Node.js", "Обрабатывает данные пользователей")
+    Container(Devices, "Devices", "Node.js", "Обрабатывает данные устройств")
+    Container(Hub, "Hub", "Node.js", "Обабатывает запросы с устройств")
+    ContainerDb(Database, "База данных", "PostgreSQL", "Хранение данных")
+}
+System_Ext(sensors, "Датчики температуры", "Расположены на объектах (домах) пользователей")
+System_Ext(kettle, "Система отопления", "Расположена на объекте (доме) пользователя")
+
+Container(Auth, "Работа с пользователями") {
+    Component(UserController, "UserController", "", "Обработка CRUD-операций с пользователями")
+    Component(AuthController, "AuthController", "", "Обработка запросов аутентификации")
+    Component(AuthServiceLayer, "ServiceLayer", "", "Бизнес-логика")
+    Component(AuthRepositoryLayer, "RepositoryLayer", "", "Работа с данными")
+}
+
+Container(Devices, "Работа с данными устройств") {
+    Component(DevicesController, "DevicesController", "", "Обработка CRUD-операций с устройствами")
+    Component(DevicesServiceLayer, "ServiceLayer", "", "Бизнес-логика")
+    Component(DevicesRepositoryLayer, "RepositoryLayer", "", "Работа с данными")
+}
+
+Container(Hub, "Работа с конкретными устройствами") {
+    Component(HubDevicesController, "HubDevicesController", "", "Обработка запросов на получение данных с устройств")
+    Component(HubServiceLayer, "ServiceLayer", "", "Бизнес-логика")
+    Component(HubRepositoryLayer, "RepositoryLayer", "", "Работа с данными")
+}
+
+Rel(Frontend, BFF, "Отправка пользовательских запросов")
+Rel(BFF, Auth, "Перенаправление запросов о пользователях на соответствующий сервис")
+Rel(BFF, Devices, "Перенаправление запросов об устройствах на соответствующий сервис")
+Rel(BFF, Hub, "Перенаправление запросов статусов устройств на соответствующий сервис")
+Rel(UserController, AuthServiceLayer, "Вызов бизнес-логики")
+Rel(AuthController, AuthServiceLayer, "Вызов бизнес-логики")
+Rel(AuthServiceLayer, AuthRepositoryLayer, "CRUD-операции с данными пользователей")
+Rel(AuthRepositoryLayer, Database, "CRUD-операции с данными пользователей")
+Rel(DevicesController, DevicesServiceLayer, "Вызов бизнес-логики")
+Rel(DevicesServiceLayer, DevicesRepositoryLayer, "CRUD-операции с данными устройств")
+Rel(DevicesRepositoryLayer, Database, "CRUD-операции с данными устройств")
+Rel(HubDevicesController, HubServiceLayer, "Вызов бизнес-логики")
+Rel(HubServiceLayer, HubRepositoryLayer, "CRUD-операции с данными устройств")
+Rel(HubRepositoryLayer, Database, "CRUD-операции с данными устройств")
+
+Rel(HubServiceLayer, sensors, "Получение данных с датчиков")
+Rel(HubServiceLayer, kettle, "Отправка команд на котёл")
+
+@enduml
