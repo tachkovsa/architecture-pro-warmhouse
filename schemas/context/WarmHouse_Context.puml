@@ -1,0 +1,23 @@
+@startuml C4 Context
+!include C4_Context.puml
+
+title Диграмма контекста системы «Тёплый дом»
+
+Person(customer, "Пользователь системы «Тёплый дом»", "Клиент компании, установивший себе датчики и работающий с приложением")
+Person(technicalStaff, "Технический специалист системы «Тёплый дом»", "Специалист, устанавливающий и регистрирующий датчики и систему отопления")
+
+System(warmHouse, "Система «Тёплый дом»", "Серверное приложение для управления отоплением")
+System_Ext(sensors, "Датчики температуры", "Расположены на объектах (домах) пользователей")
+System_Ext(kettle, "Система отопления", "Расположена на объекте (доме) пользователя")
+
+Rel(customer, warmHouse, "Просмотр текущего состояния датчиков", "HTTP/REST API")
+Rel(customer, warmHouse, "Включение / отключение отопления", "HTTP/REST API")
+
+Rel(technicalStaff, warmHouse, "Добавление / удаление / изменение датчиков", "HTTP/REST API")
+Rel(technicalStaff, sensors, "Установка и регистрация датчиков", "HTTP/REST API")
+Rel(technicalStaff, kettle, "Установка и регистрация котла отопления", "HTTP/REST API")
+
+Rel(warmHouse, sensors, "Запрос актуального статуса датчиков", "HTTP/REST API")
+Rel(warmHouse, kettle, "Включение / отключение отопления", "HTTP/REST API")
+
+@enduml
