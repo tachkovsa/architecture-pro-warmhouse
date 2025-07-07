@@ -1,5 +1,5 @@
 @startuml C4 Context
-!include C4_Context.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
 
 title Диграмма контекста системы «Тёплый дом»
 
@@ -13,9 +13,7 @@ System_Ext(kettle, "Система отопления", "Расположена 
 Rel(customer, warmHouse, "Просмотр текущего состояния датчиков", "HTTP/REST API")
 Rel(customer, warmHouse, "Включение / отключение отопления", "HTTP/REST API")
 
-Rel(technicalStaff, warmHouse, "Добавление / удаление / изменение датчиков", "HTTP/REST API")
-Rel(technicalStaff, sensors, "Установка и регистрация датчиков", "HTTP/REST API")
-Rel(technicalStaff, kettle, "Установка и регистрация котла отопления", "HTTP/REST API")
+Rel(technicalStaff, warmHouse, "Добавление / удаление / изменение датчиков и котла", "HTTP/REST API")
 
 Rel(warmHouse, sensors, "Запрос актуального статуса датчиков", "HTTP/REST API")
 Rel(warmHouse, kettle, "Включение / отключение отопления", "HTTP/REST API")
