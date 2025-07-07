@@ -1,0 +1,57 @@
+@startuml ER
+skinparam linetype ortho
+
+title ER-Диаграмма
+
+entity User {
+    id : uuid (PK)
+    firstname : varchar
+    middlename : varchar
+    lastname : varchar
+    email : varchar
+    password : varchar
+    created_at : datetime
+    updated_at: datetime
+}
+
+entity Space {
+    id : uuid (PK)
+    user_id : uuid (FK)
+    display_name : varchar
+    address : varchar
+    city : varchar
+    country : varchar
+    created_at : datetime
+    updated_at: datetime
+}
+
+entity Device {
+    id : uuid (PK)
+    space_id : uuid (FK)
+    device_type : varchar
+    model : varchar
+    serial_number : varchar
+    display_name : varchar
+    status : varchar
+    created_at : datetime
+    updated_at: datetime
+}
+
+entity Telemetry {
+    id : uuid (PK)
+    device_id : int (FK)
+    value : varchar
+    type : varchar
+    recorded_at: datetime
+    created_at : datetime
+}
+
+User "1" -- "N" Space : создает
+Space "1" -- "N" Device : содержит
+Device "1" -- "N" Telemetry : генерирует
+
+User o-- Space : user_id
+Space o-- Device : space_id
+Device o-- Telemetry : device_id
+
+@enduml
