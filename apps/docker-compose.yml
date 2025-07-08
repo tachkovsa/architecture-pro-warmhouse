@@ -17,10 +17,9 @@ services:
       retries: 5
     volumes:
       - ./smart_home/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./sensors_api/init.sql:/docker-entrypoint-initdb.d/sensors_init.sql
     networks:
       - smarthome-network      
-  ## тут нужно добавить настройки
-
   temperature-api:
     build:
       context: ./temperature_api
@@ -30,8 +29,23 @@ services:
       - "8081:8081"
     networks:
       - smarthome-network
-  ## тут нужно добавить приложение
-
+  sensors-api:
+    build:
+      context: ./sensors_api
+      dockerfile: Dockerfile
+    container_name: smarthome-sensors-api
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: smarthome
+    ports:
+      - "8082:8082"
+    networks:
+      - smarthome-network
   app:
     build:
       context: ./smart_home
@@ -42,9 +56,12 @@ services:
         condition: service_healthy
       temperature-api:
         condition: service_started
+      sensors-api:
+        condition: service_started
     environment:
       - DATABASE_URL=postgres://postgres:postgres@postgres:5432/smarthome
       - TEMPERATURE_API_URL=http://temperature-api:8081
+      - SENSORS_API_URL=http://sensors-api:8082
     ports:
       - "8080:8080"
     restart: unless-stopped
