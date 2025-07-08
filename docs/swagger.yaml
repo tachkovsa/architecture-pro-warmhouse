@@ -1,0 +1,752 @@
+openapi: 3.0.0
+info:
+  title: WarmHome API
+  description: Документация API WarmHome
+  version: 0.0.1
+servers:
+  - url: http://localhost:8081
+    description: Сервер разработки
+paths:
+  /auth:
+    post:
+      summary: Аутентификация пользователя
+      description: Вход в систему по логину и паролю. Возвращает JWT токены.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                login:
+                  type: string
+                  description: Имя пользователя
+                password:
+                  type: string
+                  format: password
+                  description: Пароль пользователя
+              example:
+                login: "user@example.com"
+                password: "securepassword123"
+      responses:
+        '200':
+          description: Успешная аутентификация
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: JWT access token
+                  refresh_token:
+                    type: string
+                    description: JWT refresh token
+              example:
+                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.xxxxx"
+                refresh_token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.yyyyy"
+        '401':
+          description: Неверный логин или пароль
+          content:
+            application/json:
+              examples:
+                invalid_credentials:
+                  value:
+                    error: "Invalid login or password"
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              examples:
+                server_error:
+                  value:
+                    error: "Internal server error"
+  /users:
+    get:
+      summary: Получить список всех пользователей
+      description: Возвращает массив всех зарегистрированных пользователей.
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+              examples:
+                users_list:
+                  value:
+                    - id: "2b81a9d0-8348-44ea-88be-7d5dcbfe6187"
+                      firstname: "Ivan"
+                      middlename: "Ivanovich"
+                      lastname: "Ivanov"
+                      email: "ivan@example.com"
+                      created_at: "2023-09-15T10:00:00Z"
+                      updated_at: "2023-09-15T10:05:00Z"
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              examples:
+                server_error:
+                  value:
+                    error: "Internal server error"
+    post:
+      summary: Создать нового пользователя
+      description: Добавляет нового пользователя в систему.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                firstname:
+                  type: string
+                  description: Имя пользователя
+                middlename:
+                  type: string
+                  description: Отчество пользователя
+                lastname:
+                  type: string
+                  description: Фамилия пользователя
+                email:
+                  type: string
+                  description: E-Mail пользователя
+            example:
+              firstname: "Ivan"
+              middlename: "Ivanovich"
+              lastname: "Ivanov"
+              email: "ivan@example.com"
+      responses:
+        '201':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/User'
+              examples:
+                created_user:
+                  value:
+                    id: "2b81a9d0-8348-44ea-88be-7d5dcbfe6187"
+                    firstname: "Ivan"
+                    middlename: "Ivanovich"
+                    lastname: "Ivanov"
+                    email: "ivan@example.com"
+                    created_at: "2023-09-15T10:00:00Z"
+                    updated_at: "2023-09-15T10:05:00Z"
+  /users/{user_id}:
+    get:
+      summary: Получить информацию о пользователе
+      description: Возвращает детали конкретного пользователя.
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/User'
+              example:
+                id: "2b81a9d0-8348-44ea-88be-7d5dcbfe6187"
+                firstname: "Ivan"
+                middlename: "Ivanovich"
+                lastname: "Ivanov"
+                email: "ivan@example.com"
+                created_at: "2023-09-15T10:00:00Z"
+                updated_at: "2023-09-15T10:05:00Z"
+        '404':
+          description: Пользователь не найден
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              examples:
+                server_error:
+                  value:
+                    error: "Internal server error"
+    patch:
+      summary: Обновить пользователя
+      description: Изменяет данные пользователя.
+      parameters:
+        - in: path
+          name: user_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Идентификатор пользователя
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                firstname:
+                  type: string
+                  description: Имя пользователя
+                middlename:
+                  type: string
+                  description: Отчество пользователя
+                lastname:
+                  type: string
+                  description: Фамилия пользователя
+                email:
+                  type: string
+                  description: E-Mail пользователя
+            example:
+              firstname: "Ivan"
+              middlename: "Ivanovich"
+              lastname: "Ivanov"
+              email: "ivan@example.com"
+      responses:
+        '200':
+          description: Пользователь успешно обновлен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: Пользователь не найден
+        '500':
+          description: Внутренняя ошибка сервера
+    delete:
+      summary: Удалить пользователя
+      description: Удаляет пользователя из системы.
+      parameters:
+        - in: path
+          name: user_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Идентификатор пользователя
+      responses:
+        '204':
+          description: Пользователь успешно удален
+        '404':
+          description: Пользователь не найден
+        '500':
+          description: Внутренняя ошибка сервера
+  /spaces:
+    get:
+      summary: Получить список всех пространств
+      description: Возвращает массив всех зарегистрированных пространств.
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Space'
+              examples:
+                spaces_list:
+                  value:
+                    - id: "a1b2c3d4-e5f6-7890-g1h2-i3j4k5l6m7n8"
+                      name: "Living Room"
+                      description: "Основное жилое пространство"
+                      created_at: "2023-09-15T10:00:00Z"
+                      updated_at: "2023-09-15T10:05:00Z"
+    post:
+      summary: Создать новое пространство
+      description: Добавляет новое пространство в систему.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Название пространства
+                description:
+                  type: string
+                  description: Описание пространства
+            example:
+              name: "Kitchen"
+              description: "Кухня"
+      responses:
+        '201':
+          description: Пространство успешно создано
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Space'
+              examples:
+                created_space:
+                  value:
+                    id: "a1b2c3d4-e5f6-7890-g1h2-i3j4k5l6m7n8"
+                    name: "Kitchen"
+                    description: "Кухня"
+                    created_at: "2023-09-15T10:00:00Z"
+                    updated_at: "2023-09-15T10:05:00Z"
+        '400':
+          description: Некорректные данные
+          content:
+            application/json:
+              examples:
+                bad_request:
+                  value:
+                    error: "Invalid input data"
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              examples:
+                server_error:
+                  value:
+                    error: "Internal server error"
+  /spaces/{space_id}:
+    get:
+      summary: Получить информацию о пространстве
+      description: Возвращает детали конкретного пространства.
+      parameters:
+        - in: path
+          name: space_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Идентификатор пространства
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Space'
+        '404':
+          description: Пространство не найдено
+        '500':
+          description: Внутренняя ошибка сервера
+    patch:
+      summary: Обновить пространство
+      description: Изменяет имя и описание пространства.
+      parameters:
+        - in: path
+          name: space_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Идентификатор пространства
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+              example:
+                name: "Updated Living Room"
+                description: "Обновлённое описание"
+      responses:
+        '200':
+          description: Пространство успешно обновлено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Space'
+        '404':
+          description: Пространство не найдено
+        '500':
+          description: Внутренняя ошибка сервера
+    delete:
+      summary: Удалить пространство
+      description: Удаляет пространство из системы.
+      parameters:
+        - in: path
+          name: space_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Идентификатор пространства
+      responses:
+        '204':
+          description: Пространство успешно удалено
+        '404':
+          description: Пространство не найдено
+        '500':
+          description: Внутренняя ошибка сервера
+
+  /spaces/{space_id}/devices:
+    post:
+      summary: Добавить устройство в пространство
+      description: Привязывает устройство к указанному пространству.
+      parameters:
+        - in: path
+          name: space_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Идентификатор пространства
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                device_id:
+                  type: string
+                  format: uuid
+                  description: Идентификатор устройства
+              example:
+                device_id: "123e4567-e89b-12d3-a456-426614174000"
+      responses:
+        '201':
+          description: Устройство успешно добавлено в пространство
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+              examples:
+                device_in_space:
+                  value:
+                    id: "123e4567-e89b-12d3-a456-426614174000"
+                    space_id: "a1b2c3d4-e5f6-7890-g1h2-i3j4k5l6m7n8"
+                    device_type: "Sensor"
+                    model: "Model X"
+                    serial_number: "SN123456"
+                    display_name: "Main Sensor"
+                    status: "active"
+                    created_at: "2023-09-15T10:00:00Z"
+                    updated_at: "2023-09-15T10:05:00Z"
+        '400':
+          description: Неверный идентификатор устройства
+        '404':
+          description: Устройство или пространство не найдены
+        '500':
+          description: Внутренняя ошибка сервера
+  /devices:
+    get:
+      summary: Получить список всех устройств
+      description: Возвращает массив всех устройств, зарегистрированных в системе.
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Device'
+              examples:
+                devices_list:
+                  value:
+                    - id: "123e4567-e89b-12d3-a456-426614174000"
+                      space_id: "a1b2c3d4-e5f6-7890-g1h2-i3j4k5l6m7n8"
+                      device_type: "Sensor"
+                      model: "Model X"
+                      serial_number: "SN123456"
+                      display_name: "Main Sensor"
+                      status: "active"
+                      created_at: "2023-09-15T10:00:00Z"
+                      updated_at: "2023-09-15T10:05:00Z"
+                    - id: "abcd1234-5678-90ef-ghij-klmnopqrstuv"
+                      space_id: "a1b2c3d4-e5f6-7890-g1h2-i3j4k5l6m7n8"
+                      device_type: "Thermostat"
+                      model: "Model Y"
+                      serial_number: "SN789012"
+                      display_name: "Living Room Thermostat"
+                      status: "inactive"
+                      created_at: "2023-09-15T11:00:00Z"
+                      updated_at: "2023-09-15T11:10:00Z"
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              examples:
+                server_error:
+                  value:
+                    error: "Internal server error"
+    post:
+      summary: Создать новое устройство
+      description: Регистрация нового устройства в системе.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                space_id:
+                  type: string
+                  format: uuid
+                  description: Идентификатор связанного пространства
+                device_type:
+                  type: string
+                  description: Тип устройства
+                model:
+                  type: string
+                  description: Модель устройства
+                serial_number:
+                  type: string
+                  description: Серийный номер устройства
+                display_name:
+                  type: string
+                  description: Отображаемое имя устройства
+                status:
+                  type: string
+                  description: Статус устройства
+              example:
+                space_id: "a1b2c3d4-e5f6-7890-g1h2-i3j4k5l6m7n8"
+                device_type: "Thermostat"
+                model: "Model Y"
+                serial_number: "SN789012"
+                display_name: "Living Room Thermostat"
+                status: "inactive"
+            example:
+              space_id: "a1b2c3d4-e5f6-7890-g1h2-i3j4k5l6m7n8"
+              device_type: "Thermostat"
+              model: "Model Y"
+              serial_number: "SN789012"
+              display_name: "Living Room Thermostat"
+              status: "inactive"
+      responses:
+        '201':
+          description: Устройство успешно создано
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+              examples:
+                created_device:
+                  value:
+                    id: "abcd1234-5678-90ef-ghij-klmnopqrstuv"
+                    space_id: "a1b2c3d4-e5f6-7890-g1h2-i3j4k5l6m7n8"
+                    device_type: "Thermostat"
+                    model: "Model Y"
+                    serial_number: "SN789012"
+                    display_name: "Living Room Thermostat"
+                    status: "inactive"
+                    created_at: "2023-09-15T11:00:00Z"
+                    updated_at: "2023-09-15T11:10:00Z"
+        '400':
+          description: Некорректные данные
+          content:
+            application/json:
+              examples:
+                bad_request:
+                  value:
+                    error: "Invalid input data"
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              examples:
+                server_error:
+                  value:
+                    error: "Internal server error"
+  /devices/{device_id}:
+    get:
+      summary: Получить информацию об устройстве
+      description: Возвращает информацию об устройстве по его идентификатору.
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/Device'
+        '404':
+          description: Устройство не найдено
+        '500':
+          description: Внутренняя ошибка сервера
+    patch:
+      summary: Обновить состояние устройства
+      description: Обновляет состояние устройства по его идентификатору.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                space_id:
+                  type: string
+                  format: uuid
+                  description: Идентификатор связанного пространства
+                device_type:
+                  type: string
+                  description: Тип устройства
+                model:
+                  type: string
+                  description: Модель устройства
+                serial_number:
+                  type: string
+                  description: Серийный номер устройства
+                display_name:
+                  type: string
+                  description: Отображаемое имя устройства
+                status:
+                  type: string
+                  description: Статус устройства
+              example:
+                space_id: "a1b2c3d4-e5f6-7890-g1h2-i3j4k5l6m7n8"
+                device_type: "Thermostat"
+                model: "Model Y"
+                serial_number: "SN789012"
+                display_name: "Living Room Thermostat"
+                status: "inactive"
+      responses:
+        '200':
+          description: Успешное обновление
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+        '404':
+          description: Устройство не найдено
+        '500':
+          description: Внутренняя ошибка сервера
+  /devices/{device_id}/command:
+    post:
+      summary: Отправить команду устройству
+      description: Отправляет команду (например, "включить", "выключить") указанному устройству.
+      parameters:
+        - in: path
+          name: device_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Идентификатор устройства
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                command:
+                  type: string
+                  description: Команда для устройства (например, "on", "off")
+              example:
+                command: "on"
+      responses:
+        '200':
+          description: Команда успешно отправлена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+        '400':
+          description: Неверная команда
+        '404':
+          description: Устройство не найдено
+        '500':
+          description: Внутренняя ошибка сервера
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор пользователя
+        firstname:
+          type: string
+          description: Имя пользователя
+        middlename:
+          type: string
+          description: Отчество пользователя
+        lastname:
+          type: string
+          description: Фамилия пользователя
+        email:
+          type: string
+          description: E-Mail пользователя
+        created_at:
+          type: string
+          format: date-time
+          description: Дата и время создания
+        updated_at:
+          type: string
+          format: date-time
+          description: Дата и время последнего обновления
+    Space:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор пространства
+        name:
+          type: string
+          description: Название пространства
+        description:
+          type: string
+          description: Описание пространства
+        created_at:
+          type: string
+          format: date-time
+          description: Дата и время создания
+        updated_at:
+          type: string
+          format: date-time
+          description: Дата и время последнего обновления
+      example:
+        id: "a1b2c3d4-e5f6-7890-g1h2-i3j4k5l6m7n8"
+        name: "Living Room"
+        description: "Основное жилое пространство"
+        created_at: "2023-09-15T10:00:00Z"
+        updated_at: "2023-09-15T10:05:00Z"
+    Device:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Уникальный идентификатор устройства
+        space_id:
+          type: string
+          format: uuid
+          description: Идентификатор связанного пространства
+        device_type:
+          type: string
+          description: Тип устройства
+        model:
+          type: string
+          description: Модель устройства
+        serial_number:
+          type: string
+          description: Серийный номер устройства
+        display_name:
+          type: string
+          description: Отображаемое имя устройства
+        status:
+          type: string
+          description: Статус устройства
+        created_at:
+          type: string
+          format: date-time
+          description: Дата и время создания записи
+        updated_at:
+          type: string
+          format: date-time
+          description: Дата и время последнего обновления
+      example:
+        id: "123e4567-e89b-12d3-a456-426614174000"
+        space_id: "a1b2c3d4-e5f6-7890-g1h2-i3j4k5l6m7n8"
+        device_type: "Sensor"
+        model: "Model X"
+        serial_number: "SN123456"
+        display_name: "Main Sensor"
+        status: "active"
+        created_at: "2023-09-15T10:00:00Z"
+        updated_at: "2023-09-15T10:05:00Z"

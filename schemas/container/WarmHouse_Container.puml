@@ -1,0 +1,34 @@
+@startuml C4 Container
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+title Диграмма контейнеров системы «Тёплый дом»
+
+Person(customer, "Пользователь системы «Тёплый дом»", "Клиент компании, установивший себе датчики и работающий с приложением")
+Person(technicalStaff, "Технический специалист системы «Тёплый дом»", "Специалист, устанавливающий и регистрирующий датчики и систему отопления")
+
+System_Ext(sensors, "Датчики температуры", "Расположены на объектах (домах) пользователей")
+System_Ext(kettle, "Система отопления", "Расположена на объекте (доме) пользователя")
+System_Boundary(warmHouse, "Система «Тёплый дом»", "Серверное приложение для управления отоплением") {
+    Container(Frontend, "WEB-приложение", "React", "Обработка интерактивных действий пользователей")
+    Container(BFF, "BFF", "Node.js", "Обработки пользовательских запросов")
+    Container(hub, "HUB", "Node.js", "Обработки данных с датчиков и котла")
+    Container(auth, "Auth", "Node.js", "Обработка аутентификации")
+    Container(devices, "Devices", "Node.js", "Обработка запросов по работе с устройствами")
+    ContainerDb(postgresql, "База данных", "PostgreSQL")
+}
+
+Rel(customer, Frontend, "Работа с WEB-приложением: Просмотр датчиков, их показателей", "HTTP")
+Rel(technicalStaff, Frontend, "Работа с WEB-приложением: Регистрация новых датчиков, изменение данных", "HTTP")
+Rel(Frontend, BFF, "Обработка пользовательских операций", "HTTP/REST API")
+Rel(BFF, devices, "Отправка запросов по работе с утстройствами: регситрация, удаление, изменение", "HTTP/REST API")
+Rel(devices, postgresql, "CRUD-операции с данными по устройствам", "ORM")
+Rel(BFF, hub, "Запрос текущего состояния зарегистрированных устройств", "HTTP/REST API")
+Rel(BFF, hub, "Отправка команд системе отопления", "HTTP/REST API")
+Rel(BFF, auth, "Отправка запросов на аутентификацию пользователей", "HTTP/REST API")
+Rel(BFF, auth, "Отправка запросов на создание/удаление/изменение пользователей", "HTTP/REST API")
+Rel(auth, postgresql, "CRUD-операции с пользовательскими данными", "ORM")
+Rel(hub, postgresql, "CRUD-операции с данными устройств", "ORM")
+Rel(hub, sensors, "Запрос информации по текущему состоянию датчиков", "HTTP/REST API")
+Rel(hub, kettle, "Отправка команд на котёл", "HTTP/REST API")
+
+@enduml

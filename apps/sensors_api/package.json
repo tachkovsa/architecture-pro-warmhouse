@@ -1,0 +1,14 @@
+{
+  "name": "sensors-api",
+  "version": "0.0.1",
+  "main": "app.js",
+  "type": "module",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "express": "4.18.2",
+    "sequelize": "6.32.1",
+    "pg": "8.11.3"
+  }
+} 
